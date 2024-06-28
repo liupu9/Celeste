@@ -12,153 +12,516 @@ namespace Celeste
     {
         #region Constants
 
+        /// <summary>
+        /// (001) 定义冲刺粒子效果类型 A
+        /// </summary>
         public static ParticleType P_DashA;
+        /// <summary>
+        /// (002) 定义冲刺粒子效果类型 B
+        /// </summary>
         public static ParticleType P_DashB;
+        /// <summary>
+        /// (003) 定义卡带飞行粒子效果类型
+        /// </summary>
         public static ParticleType P_CassetteFly;
+        /// <summary>
+        /// (004) 定义分裂粒子效果类型
+        /// </summary>
         public static ParticleType P_Split;
+        /// <summary>
+        /// (005) 定义巅峰着陆粒子效果类型 A
+        /// </summary>
         public static ParticleType P_SummitLandA;
+        /// <summary>
+        /// (006) 定义巅峰着陆粒子效果类型 B
+        /// </summary>
         public static ParticleType P_SummitLandB;
+        /// <summary>
+        /// (007) 定义巅峰着陆粒子效果类型 C
+        /// </summary>
         public static ParticleType P_SummitLandC;
 
+        /// <summary>
+        /// (008) 定义最大坠落速度
+        /// </summary>
         public const float MaxFall = 160f;
+        /// <summary>
+        /// (009) 定义重力加速度
+        /// </summary>
         private const float Gravity = 900f;
+        /// <summary>
+        /// (010) 定义半重力阈值
+        /// </summary>
         private const float HalfGravThreshold = 40f;
 
+        /// <summary>
+        /// (011) 定义快速最大坠落速度
+        /// </summary>
         private const float FastMaxFall = 240f;
+        /// <summary>
+        /// (012) 定义快速最大加速度
+        /// </summary>
         private const float FastMaxAccel = 300f;
 
+        /// <summary>
+        /// (013) 定义最大奔跑速度
+        /// </summary>
         public const float MaxRun = 90f;
+        /// <summary>
+        /// (014) 定义加速度
+        /// </summary>
         public const float RunAccel = 1000f;
+        /// <summary>
+        /// (015) 定义减速
+        /// </summary>
         private const float RunReduce = 400f;
+        /// <summary>
+        /// (016) 定义空气阻力系数
+        /// </summary>
         private const float AirMult = .65f;
 
+        /// <summary>
+        /// (017) 定义持有物品时的最大奔跑速度
+        /// </summary>
         private const float HoldingMaxRun = 70f;
+        /// <summary>
+        /// (018) 定义最小持有时间
+        /// </summary>
         private const float HoldMinTime = .35f;
 
+        /// <summary>
+        /// (019) 定义自动跳跃的反弹时间
+        /// </summary>
         private const float BounceAutoJumpTime = .1f;
 
+        /// <summary>
+        /// (020) 定义下蹲时的摩擦力
+        /// </summary>
         private const float DuckFriction = 500f;
+        /// <summary>
+        /// (021) 定义下蹲校正检查的距离
+        /// </summary>
         private const int DuckCorrectCheck = 4;
+        /// <summary>
+        /// (022) 定义下蹲校正滑动的距离
+        /// </summary>
         private const float DuckCorrectSlide = 50f;
 
+        /// <summary>
+        /// (023) 定义躲避滑动速度乘数
+        /// </summary>
         private const float DodgeSlideSpeedMult = 1.2f;
+        /// <summary>
+        /// (024) 定义下蹲超级跳跃的 X 轴速度乘数
+        /// </summary>
         private const float DuckSuperJumpXMult = 1.25f;
+        /// <summary>
+        /// (025) 定义下蹲超级跳跃的 Y 轴速度乘数
+        /// </summary>
         private const float DuckSuperJumpYMult = .5f;
 
+        /// <summary>
+        /// (026) 定义跳跃的宽限期时间
+        /// </summary>
         private const float JumpGraceTime = 0.1f;
+        /// <summary>
+        /// (027) 定义跳跃速度
+        /// </summary>
         private const float JumpSpeed = -105f;
+        /// <summary>
+        /// (028) 定义跳跃提升高度
+        /// </summary>
         private const float JumpHBoost = 40f;
+        /// <summary>
+        /// (029) 定义可变跳跃时间
+        /// </summary>
         private const float VarJumpTime = .2f;
+        /// <summary>
+        /// (030) 定义天花板可变跳跃宽限期
+        /// </summary>
         private const float CeilingVarJumpGrace = .05f;
+        /// <summary>
+        /// (031) 定义向上拐角校正的距离
+        /// </summary>
         private const int UpwardCornerCorrection = 4;
+        /// <summary>
+        /// (032) 定义壁速度保留时间
+        /// </summary>
         private const float WallSpeedRetentionTime = .06f;
 
+        /// <summary>
+        /// (033) 定义墙跳检查的距离
+        /// </summary>
         private const int WallJumpCheckDist = 3;
+        /// <summary>
+        /// (034) 定义强跳的力时间
+        /// </summary>
         private const float WallJumpForceTime = .16f;
+        /// <summary>
+        /// (035) 定义墙跳的水平速度
+        /// </summary>
         private const float WallJumpHSpeed = MaxRun + JumpHBoost;
 
+        /// <summary>
+        /// (036) 定义壁滑开始时的最大速度
+        /// </summary>
         public const float WallSlideStartMax = 20f;
+        /// <summary>
+        /// (037) 定义壁滑的时间
+        /// </summary>
         private const float WallSlideTime = 1.2f;
 
+        /// <summary>
+        /// (038) 定义反弹可变跳跃时间
+        /// </summary>
         private const float BounceVarJumpTime = .2f;
+        /// <summary>
+        /// (039) 定义反弹速度
+        /// </summary>
         private const float BounceSpeed = -140f;
+        /// <summary>
+        /// (040) 定义超级反弹可变跳跃时间
+        /// </summary>
         private const float SuperBounceVarJumpTime = .2f;
+        /// <summary>
+        /// (041) 定义超级反弹速度
+        /// </summary>
         private const float SuperBounceSpeed = -185f;
 
+        /// <summary>
+        /// (042) 定义超级跳跃速度
+        /// </summary>
         private const float SuperJumpSpeed = JumpSpeed;
+        /// <summary>
+        /// (043) 定义超级跳跃高度
+        /// </summary>
         private const float SuperJumpH = 260f;
+        /// <summary>
+        /// (044) 定义超级壁跳速度
+        /// </summary>
         private const float SuperWallJumpSpeed = -160f;
+        /// <summary>
+        /// (045) 定义超级壁跳可变时间
+        /// </summary>
         private const float SuperWallJumpVarTime = .25f;
+        /// <summary>
+        /// (046) 定义超级壁跳力时间
+        /// </summary>
         private const float SuperWallJumpForceTime = .2f;
+        /// <summary>
+        /// (047) 定义超级壁跳高度
+        /// </summary>
         private const float SuperWallJumpH = MaxRun + JumpHBoost * 2;
 
+        /// <summary>
+        /// (048) 定义冲刺速度
+        /// </summary>
         private const float DashSpeed = 240f;
+        /// <summary>
+        /// (049) 定义冲刺结束速度
+        /// </summary>
         private const float EndDashSpeed = 160f;
+        /// <summary>
+        /// (050) 定义冲刺向上乘数
+        /// </summary>
         private const float EndDashUpMult = .75f;
+        /// <summary>
+        /// (051) 定义冲刺时间
+        /// </summary>
         private const float DashTime = .15f;
+        /// <summary>
+        /// (052) 定义冲刺冷却时间
+        /// </summary>
         private const float DashCooldown = .2f;
+        /// <summary>
+        /// (053) 定义冲刺补充冷却时间
+        /// </summary>
         private const float DashRefillCooldown = .1f;
+        /// <summary>
+        /// (054) 定义冲刺跳穿助推距离
+        /// </summary>
         private const int DashHJumpThruNudge = 6;
+        /// <summary>
+        /// (055) 定义冲刺拐角校正距离
+        /// </summary>
         private const int DashCornerCorrection = 4;
+        /// <summary>
+        /// (056) 定义冲刺垂直地板捕捉距离
+        /// </summary>
         private const int DashVFloorSnapDist = 3;
+        /// <summary>
+        /// (057) 定义冲刺攻击时间
+        /// </summary>
         private const float DashAttackTime = .3f;
 
+        /// <summary>
+        /// (058) 定义加速移动速度
+        /// </summary>
         private const float BoostMoveSpeed = 80f;
+        /// <summary>
+        /// (059) 定义加速时间
+        /// </summary>
         public const float BoostTime = .25f;
 
+        /// <summary>
+        /// (060) 定义下蹲时风的影响系数
+        /// </summary>
         private const float DuckWindMult = 0f;
+        /// <summary>
+        /// (061) 定义风墙距离
+        /// </summary>
         private const int WindWallDistance = 3;
 
+        /// <summary>
+        /// (062) 定义反弹速度 X 轴分量
+        /// </summary>
         private const float ReboundSpeedX = 120f;
+        /// <summary>
+        /// (063) 定义反弹速度 Y 轴分量
+        /// </summary>
         private const float ReboundSpeedY = -120f;
+        /// <summary>
+        /// (064) 定义反弹可变跳跃时间
+        /// </summary>
         private const float ReboundVarJumpTime = .15f;
 
+        /// <summary>
+        /// (065) 定义反射边界速度
+        /// </summary>
         private const float ReflectBoundSpeed = 220f;
 
+        /// <summary>
+        /// (066) 定义梦幻冲刺速度
+        /// </summary>
         private const float DreamDashSpeed = DashSpeed;
+        /// <summary>
+        /// (067) 定义梦幻冲刺结束摆动距离
+        /// </summary>
         private const int DreamDashEndWiggle = 5;
+        /// <summary>
+        /// (068) 定义梦幻冲刺最短时间
+        /// </summary>
         private const float DreamDashMinTime = .1f;
 
+        /// <summary>
+        /// (069) 定义攀爬最大耐力
+        /// </summary>
         public const float ClimbMaxStamina = 110;
+        /// <summary>
+        /// (070) 定义攀爬上升所需耐力
+        /// </summary>
         private const float ClimbUpCost = 100 / 2.2f;
+        /// <summary>
+        /// (071) 定义静止攀爬耐力消耗
+        /// </summary>
         private const float ClimbStillCost = 100 / 10f;
+        /// <summary>
+        /// (072) 定义攀爬跳跃耐力消耗
+        /// </summary>
         private const float ClimbJumpCost = 110 / 4f;
+        /// <summary>
+        /// (073) 定义攀爬检查距离
+        /// </summary>
         private const int ClimbCheckDist = 2;
+        /// <summary>
+        /// (074) 定义攀爬上升检查距离
+        /// </summary>
         private const int ClimbUpCheckDist = 2;
+        /// <summary>
+        /// (075) 定义攀爬无移动时间
+        /// </summary>
         private const float ClimbNoMoveTime = .1f;
+        /// <summary>
+        /// (076) 定义攀爬疲劳阈值
+        /// </summary>
         public const float ClimbTiredThreshold = 20f;
+        /// <summary>
+        /// (077) 定义攀爬上升速度
+        /// </summary>
         private const float ClimbUpSpeed = -45f;
+        /// <summary>
+        /// (078) 定义攀爬下降速度
+        /// </summary>
         private const float ClimbDownSpeed = 80f;
+        /// <summary>
+        /// (079) 定义攀爬滑动速度
+        /// </summary>
         private const float ClimbSlipSpeed = 30f;
+        /// <summary>
+        /// (080) 定义攀爬加速度
+        /// </summary>
         private const float ClimbAccel = 900f;
+        /// <summary>
+        /// (081) 定义攀爬抓取 Y 轴乘数
+        /// </summary>
         private const float ClimbGrabYMult = .2f;
+        /// <summary>
+        /// (082) 定义攀爬跳跃 Y 轴分量
+        /// </summary>
         private const float ClimbHopY = -120f;
+        /// <summary>
+        /// (083) 定义攀爬跳跃 X 轴分量
+        /// </summary>
         private const float ClimbHopX = 100f;
+        /// <summary>
+        /// (084) 定义攀爬跳跃力时间
+        /// </summary>
         private const float ClimbHopForceTime = .2f;
+        /// <summary>
+        /// (085) 定义攀爬跳跃提升时间
+        /// </summary>
         private const float ClimbJumpBoostTime = .2f;
+        /// <summary>
+        /// (086) 定义攀爬跳跃无风时间
+        /// </summary>
         private const float ClimbHopNoWindTime = .3f;
 
+        /// <summary>
+        /// (087) 定义发射速度
+        /// </summary>
         private const float LaunchSpeed = 280f;
+        /// <summary>
+        /// (088) 定义取消发射的阈值
+        /// </summary>
         private const float LaunchCancelThreshold = 220f;
 
+        /// <summary>
+        /// (089) 定义提升 Y 轴限制
+        /// </summary>
         private const float LiftYCap = -130f;
+        /// <summary>
+        /// (090) 定义提升 X 轴限制
+        /// </summary>
         private const float LiftXCap = 250f;
 
+        /// <summary>
+        /// (091) 定义帮助跳跃的速度
+        /// </summary>
         private const float JumpThruAssistSpeed = -40f;
 
+        /// <summary>
+        /// (092) 定义无限冲刺时间
+        /// </summary>
         private const float InfiniteDashesTime = 2f;
+        /// <summary>
+        /// (093) 定义无限冲刺第一次冲刺时间
+        /// </summary>
         private const float InfiniteDashesFirstTime = .5f;
+        /// <summary>
+        /// (094) 定义飞行力量闪光时间
+        /// </summary>
         private const float FlyPowerFlashTime = .5f;
 
+        /// <summary>
+        /// (095) 定义投掷后坐力强度
+        /// </summary>
         private const float ThrowRecoil = 80f;
+        /// <summary>
+        /// (096) 定义携带物品时的目标偏移量
+        /// </summary>
         private static readonly Vector2 CarryOffsetTarget = new Vector2(0, -12);
 
+        /// <summary>
+        /// (097) 定义追逐者状态的最大时间
+        /// </summary>
         private const float ChaserStateMaxTime = 4f;
 
+        /// <summary>
+        /// (098) 定义行走速度
+        /// </summary>
         public const float WalkSpeed = 64f;
 
+        /// <summary>
+        /// (100) 定义状态：正常状态
+        /// </summary>
         public const int StNormal = 0;
+        /// <summary>
+        /// (101) 定义状态：攀爬状态
+        /// </summary>
         public const int StClimb = 1;
+        /// <summary>
+        /// (102) 定义状态：冲刺状态
+        /// </summary>
         public const int StDash = 2;
+        /// <summary>
+        /// (103) 定义状态：游泳状态
+        /// </summary>
         public const int StSwim = 3;
+        /// <summary>
+        /// (104) 定义状态：加速状态
+        /// </summary>
         public const int StBoost = 4;
+        /// <summary>
+        /// (105) 定义状态：红色冲刺状态
+        /// </summary>
         public const int StRedDash = 5;
+        /// <summary>
+        /// (106) 定义状态：被击中压扁状态
+        /// </summary>
         public const int StHitSquash = 6;
+        /// <summary>
+        /// (107) 定义状态：发射状态
+        /// </summary>
         public const int StLaunch = 7;
+        /// <summary>
+        /// (108) 定义状态：捡起物品状态
+        /// </summary>
         public const int StPickup = 8;
+        /// <summary>
+        /// (109) 定义状态：梦幻冲刺状态
+        /// </summary>
         public const int StDreamDash = 9;
+        /// <summary>
+        /// (110) 定义状态：在巅峰时发射角色的状态
+        /// </summary>
         public const int StSummitLaunch = 10;
+        /// <summary>
+        /// (111) 定义状态：虚拟状态
+        /// </summary>
         public const int StDummy = 11;
+        /// <summary>
+        /// (112) 定义状态：角色在介绍片段中行走的状态
+        /// </summary>
         public const int StIntroWalk = 12;
+        /// <summary>
+        /// (113) 定义状态：角色在介绍片段中跳跃的状态
+        /// </summary>
         public const int StIntroJump = 13;
+        /// <summary>
+        /// (114) 定义状态：角色在介绍片段中重生的状态
+        /// </summary>
         public const int StIntroRespawn = 14;
+        /// <summary>
+        /// (115) 定义状态：角色在介绍片段中醒来的状态
+        /// </summary>
         public const int StIntroWakeUp = 15;
+        /// <summary>
+        /// (116) 定义状态：角色在使用鸟冲刺教程中的状态
+        /// </summary>
         public const int StBirdDashTutorial = 16;
+        /// <summary>
+        /// (117) 定义状态：角色被冻结的状态
+        /// </summary>
         public const int StFrozen = 17;
+        /// <summary>
+        /// (118) 定义状态：角色在反射中下落的状态
+        /// </summary>
         public const int StReflectionFall = 18;
+        /// <summary>
+        /// (119) 定义状态：角色在空中飞行的状态
+        /// </summary>
         public const int StStarFly = 19;
+        /// <summary>
+        /// (120) 定义状态：角色在寺庙中掉落的状态
+        /// </summary>
         public const int StTempleFall = 20;
+        /// <summary>
+        /// (121) 定义状态：角色通过卡带飞行的状态
+        /// </summary>
         public const int StCassetteFly = 21;
+        /// <summary>
+        /// (122) 定义状态：角色被吸引的状态
+        /// </summary>
         public const int StAttract = 22;
 
         public const string TalkSfx = "player_talk";

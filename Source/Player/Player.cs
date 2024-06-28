@@ -530,128 +530,259 @@ namespace Celeste
 
         #region Vars
 
+        // (201) 角色的速度向量
         public Vector2 Speed;
+        // (202) 角色的面向方向
         public Facings Facing;
+        // (203) 角色的精灵对象
         public PlayerSprite Sprite;
+        // (204) 角色的头发对象
         public PlayerHair Hair;
+        // (205) 状态机，用于管理角色的不同状态
         public StateMachine StateMachine;
+        // (206) 摄像机锚点
         public Vector2 CameraAnchor;
+        // (207) 摄像机锚点是否忽略 X 轴
         public bool CameraAnchorIgnoreX;
+        // (208) 摄像机锚点是否忽略 Y 轴
         public bool CameraAnchorIgnoreY;
+        // (209) 摄像机锚点的插值
         public Vector2 CameraAnchorLerp;
+        // (210) 是否强制摄像机更新
         public bool ForceCameraUpdate;
+        // (211) 角色所属的领导者对象，如果角色是追随者，该领导者指向角色追随的对象
         public Leader Leader;
+        // (212) 顶点光源对象
         public VertexLight Light;
+        // (213) 角色拥有的冲刺次数
         public int Dashes;
+        // (214) 角色的耐力值，初始化时为最高耐力值
         public float Stamina = ClimbMaxStamina;
+        // (215) 草莓是否被阻挡
         public bool StrawberriesBlocked;
+        // (216) 角色的上一个位置
         public Vector2 PreviousPosition;
+        // (217) 虚拟角色是否自动动画
         public bool DummyAutoAnimate = true;
+        // (218) 强风对角色头发的作用力向量
         public Vector2 ForceStrongWindHair;
+        // (219) 冲刺的覆盖方向
         public Vector2? OverrideDashDirection;
+        // (220) 在反射中是否翻转角色
         public bool FlipInReflection = false;
+        // (221) 是否刚重生 如果角色重生后没有移动，则为 True
         public bool JustRespawned;  // True if the player hasn't moved since respawning
+        // (222) 是否死亡
         public bool Dead { get; private set; }
 
+        // 私有成员变量
+
         private Level level;
+        // (223) 水平碰撞委托
         private Collision onCollideH;
+        // (224) 垂直碰撞委托
         private Collision onCollideV;
+        // (225) 角色是否在地面上
         private bool onGround;
+        // (226) 角色上一帧是否在地面上
         private bool wasOnGround;
+        // (227) 角色的水平移动输入（-1，0，或1）
         private int moveX;
+        // (228) 是否闪光
         private bool flash;
+        // (229) 角色上一帧是否蹲下
         private bool wasDucking;
 
+        // (230) 空闲计时器，用于监控角色空闲的时间，这可能用于决定角色的下一个动作，例如切换到不同的空闲动画。
         private float idleTimer;
+        // (231) 定义一个静态选择器，用于选择角色在寒冷环境中的空闲动画，每个动画关联一个权重，权重用于控制每个动画被选中的概率。
         private static Chooser<string> idleColdOptions = new Chooser<string>().Add("idleA", 5f).Add("idleB", 3f).Add("idleC", 1f);
+        // (232) 定义一个静态选择器，用于选择角色在没有背包时的空闲动画，可能用于表现角色在轻松状态下的行为。
         private static Chooser<string> idleNoBackpackOptions = new Chooser<string>().Add("idleA", 1f).Add("idleB", 3f).Add("idleC", 3f);
+        // (233) 定义一个静态选择器，用于选择角色在温暖环境中的空闲动画，可能用于指定角色在特定环境下的表现。
         private static Chooser<string> idleWarmOptions = new Chooser<string>().Add("idleA", 5f).Add("idleB", 3f);
 
+        // (234) 收集草莓索引，用于追踪角色收集草莓的进度，可能用于解锁特定内容或在游戏中显示进度。
         public int StrawberryCollectIndex = 0;
+        // (235) 草莓收集重置计时器，用于控制收集草莓行为的重置，例如，在一段时间后允许角色再次收集草莓。
         public float StrawberryCollectResetTimer = 0f;
 
+        // (236) 角色的受击框，用于处理角色与环境或其他对象的碰撞检测，确保正确的碰撞响应。
         private Hitbox hurtbox;
+        // (237) 跳跃宽限计时器，用于提供一段额外的时间窗口，允许角色在特定情况下执行跳跃动作。
         private float jumpGraceTimer;
+        // (238) 自动跳跃的标志，当设置为 true 时，角色将根据游戏逻辑自动执行跳跃动作。
         public bool AutoJump;
+        // (239) 控制自动跳跃的计时器，决定角色何时执行自动跳跃，以及跳跃的频率。
         public float AutoJumpTimer;
+        // (240) 可变跳跃速度，允许角色在跳跃过程中改变速度，可能用于实现更丰富的跳跃行为。
         private float varJumpSpeed;
+        // (241) 用于控制可变跳跃行为的计时器，决定角色何时改变跳跃速度。
         private float varJumpTimer;
+        // (242) 强制移动的 X 方向值，用于在特定状态下强制角色向特定方向移动。
         private int forceMoveX;
+        // (243) 控制强制移动效果持续时间的计时器，确保角色在一段特定时间内受到强制移动。
         private float forceMoveXTimer;
+        // (244) 在攀爬跳跃到一个移动的固体上时，如果没有直接到达顶部，让角色在旁边等待直到到达顶部。
         private int hopWaitX;   // If you climb hop onto a moving solid, snap to beside it until you get above it
+        // (245) 在等待过程中的 X 方向速度，用于控制角色在等待时是否继续移动。
         private float hopWaitXSpeed;
+        // (246) 最后一次瞄准的方向，可能用于保持角色的一致性或在某些机制中使用。
         private Vector2 lastAim;
+        // (247) 冲刺冷却计时器，控制角色在冲刺后需要等待多久才能再次冲刺。
         private float dashCooldownTimer;
+        // (248) 冲刺填装冷却计时器，用于控制角色收集冲刺能量的冷却时间。
         private float dashRefillCooldownTimer;
+        // (249) 冲刺的方向向量，指定角色冲刺的方向，用于控制角色的移动。
         public Vector2 DashDir;
+        // (250) 墙壁滑行计时器，用于衡量角色在墙壁上滑行的时间，影响角色在墙壁上的行为。
         private float wallSlideTimer = WallSlideTime;
+        // (251) 墙壁滑行的方向，-1 表示向左，1 表示向右，0 表示没有滑行。
         private int wallSlideDir;
+        // (252) 攀爬不移动计时器，用于控制角色在攀爬过程中静止的时间，可能用于判断角色是否需要滑下或继续停留。
         private float climbNoMoveTimer;
+        // (253) 搬运物品时的偏移向量，用于调整角色和物品的相对位置，确保正确的视觉表现。
         private Vector2 carryOffset;
+        // (254) 死亡时的偏移向量，用于调整角色死亡动画的位置，确保死亡动画在正确的地点播放。
         private Vector2 deadOffset;
+        // (255) 引入片段时的缓动值，用于控制引入片段中角色的动画速度，可能用于创建平滑的过渡效果。
         private float introEase;
+        // (256) 如果角色撞到墙壁，启动这个计时器。如果在计时器结束前没有障碍，保留水平速度
         private float wallSpeedRetentionTimer; // If you hit a wall, start this timer. If coast is clear within this timer, retain h-speed
+        // (257) 保留的墙壁速度
         private float wallSpeedRetained;
+        // (258) 墙壁助力的方向，-1 表示向左，1 表示向右
         private int wallBoostDir;
+        // (259) 墙壁助力计时器，用于控制角色在墙上跳跃的时机
         private float wallBoostTimer;   // If you climb jump and then do a sideways input within this timer, switch to wall jump
+        // (260) 最大下落速度
         private float maxFall;
+        // (261) 冲刺攻击计时器
         private float dashAttackTimer;
+        // (262) 追踪者状态列表
         private List<ChaserState> chaserStates;
+        // (263) 角色是否疲劳的标记，用于控制角色的外观或行为上的变化，如汗水特效
         private bool wasTired;
+        // (264) 角色内部触发的集合
         private HashSet<Trigger> triggersInside;
+        // (265) 角色在空中达到的最高 Y 坐标，用于记录角色跳跃的高度，可能与游戏中的成就或奖励有关
         private float highestAirY;
+        // (266) 冲刺是否在地面上开始的标记
         private bool dashStartedOnGround;
+        // (267) 是否快速跳跃，可能影响跳跃的高度或距离，或者是跳跃的速度
         private bool fastJump;
+        // (268) 最后一次攀爬移动的方向
         private int lastClimbMove;
+        // (269) 无风计时器，用于控制角色在特定区域内不受风影响的时间
         private float noWindTimer;
+        // (270) 梦幻冲刺结束计时器，用于控制角色的特殊冲刺技能的持续时间
         private float dreamDashCanEndTimer;
+        // (271) 攀爬跳跃中的固体对象，用于记录角色在攀爬跳跃过程中与之交互的对象，可能用于确定角色的位置或状态
         private Solid climbHopSolid;
+        // (272) 攀爬跳跃中的固体对象的位置
         private Vector2 climbHopSolidPosition;
+        // (273) 墙壁滑行音效资源
         private SoundSource wallSlideSfx;
+        // (274) 游泳表面循环音效资源
         private SoundSource swimSurfaceLoopSfx;
+        // (275) 角色在陆地上行走时的脚步音效播放时间
         private float playFootstepOnLand;
+        // (276) 最小持有计时器，可能用于控制角色对物品或状态的持续时间
         private float minHoldTimer;
+        // (277) 当前的加速道具，可能提供额外的速度或特殊能力
         public Booster CurrentBooster;
+        // (278) 上一个加速道具，可能用于追踪道具的使用历史，或者用于判断是否需要移除或替换当前道具
         private Booster lastBooster;
+        // (279) 是否调用了冲刺事件的标记，用于控制特定事件的触发，确保它们只在必要时执行，避免重复或错误的调用
         private bool calledDashEvents;
+        // (280) 上一次冲刺的次数，用于比较本次冲刺与之前的冲刺行为，可能用于分析角色的表现或统计数据
         private int lastDashes;
+        // (281) 汗水精灵实例，用于在角色表面渲染汗水效果，提高角色的表现力和真实感
         private Sprite sweatSprite;
+        // (282) 初始头发数量，用于记录角色的初始发型或头发状态，可能在游戏过程中发生变化
         private int startHairCount;
+        // (283) 是否被发射，用于标记角色是否处于被发射的状态，可能影响角色的物理行为或外观
         private bool launched;
+        // (284) 发射计时器，用于控制角色被发射后的持续时间或冷却时间，确保其效果不会持续过久
         private float launchedTimer;
+        // (285) 冲刺轨迹计时器，用于控制冲刺轨迹特效的显示时间，增强冲刺动作的可视性
         private float dashTrailTimer;
+        // (286) 追踪者状态声音的活动音效列表，用于管理和播放与追踪者状态相关的特定音效
         private List<ChaserStateSound> activeSounds = new List<ChaserStateSound>();
+        // (287) 角色闲置音效的 FMOD 事件实例，用于在角色闲置时播放特定的音效，增强游戏的沉浸感和氛围
         private FMOD.Studio.EventInstance idleSfx;
 
+        // (288) 定义普通状态下的碰撞箱
         private readonly Hitbox normalHitbox = new Hitbox(8, 11, -4, -11);
+        // (289) 定义蹲下状态下的碰撞箱
         private readonly Hitbox duckHitbox = new Hitbox(8, 6, -4, -6);
+        // (290) 定义普通状态下的受击碰撞箱
         private readonly Hitbox normalHurtbox = new Hitbox(8, 9, -4, -11);
+        // (291) 定义蹲下状态下的受击碰撞箱
         private readonly Hitbox duckHurtbox = new Hitbox(8, 4, -4, -6);
+        // (292) 定义获得星星飞行能力后的碰撞箱
         private readonly Hitbox starFlyHitbox = new Hitbox(8, 8, -4, -10);
+        // (293) 定义获得星星飞行能力后的受击碰撞箱
         private readonly Hitbox starFlyHurtbox = new Hitbox(6, 6, -3, -9);
 
+        // (294) 定义普通状态下，顶点光源的偏移量
         private Vector2 normalLightOffset = new Vector2(0, -8);
+        // (295) 定义蹲下状态下，顶点光源的偏移量
         private Vector2 duckingLightOffset = new Vector2(0, -3);
 
+        // (296) 用于存储临时实体列表
         private List<Entity> temp = new List<Entity>();
 
-        // hair
+        // hair 头发相关的颜色常量
+        // (297) 定义一个静态只读变量 NormalHairColor，用于储存角色头发的普通颜色
         public static readonly Color NormalHairColor = Calc.HexToColor("AC3232");
+        // (298) 定义一个静态只读变量 FlyPowerHairColor，用于存储角色头发在获得飞行能力时的颜色
         public static readonly Color FlyPowerHairColor = Calc.HexToColor("F2EB6D");
+        // (299) 定义一个静态只读变量 UsedHairColor，用于存储角色头发在使用后或疲劳时的颜色
         public static readonly Color UsedHairColor = Calc.HexToColor("44B7FF");
+        // (300) 定义一个静态只读变量 FlashHairColor，它被初始化为白色，这个颜色可能用于表示角色头发的闪烁状态
         public static readonly Color FlashHairColor = Color.White;
+        // (301) 定义一个静态只读变量 TwoDashesHairColor，用于存储角色头发在进行两次冲刺时的颜色
         public static readonly Color TwoDashesHairColor = Calc.HexToColor("ff6def");
+        // (302) 头发闪烁的计时器
         private float hairFlashTimer;
+        // (303) 用于覆盖头发颜色的可选颜色，允许自定义头发颜色，用于特定效果或事件
         public Color? OverrideHairColor;
 
+        // (304) 风向变量，用于模拟游戏世界中的风
         private Vector2 windDirection;
+        // (305) 风的持续时间，用于控制风向效果的时间长度
         private float windTimeout;
+        // (306) 风对头发的效果计时器，用于确定风对角色头发的影响时间
         private float windHairTimer;
 
         // level-start intro
-        public enum IntroTypes { Transition, Respawn, WalkInRight, WalkInLeft, Jump, WakeUp, Fall, TempleMirrorVoid, None }
+        // (307) 定义一个名为 IntroTypes 的枚举，用于表示不同的开场类型
+        public enum IntroTypes
+        {
+            // (308) 过渡
+            Transition,
+            // (309) 重生
+            Respawn,
+            // (310) 从右向左行走进入
+            WalkInRight,
+            // (311) 从左向右行走进入
+            WalkInLeft,
+            // (312) 跳跃
+            Jump,
+            // (313) 唤醒
+            WakeUp,
+            // (314) 下落
+            Fall,
+            // (315) 神庙镜子虚空
+            TempleMirrorVoid,
+            // (316) 无
+            None
+        }
+        // (317) 声明一个名为 IntroType 的公共枚举变量，用于存储当前的开场类型
         public IntroTypes IntroType;
 
+        // (318) 声明一个名为 reflection 的私有变量，用于存储 MirrorReflection 类型的引用
         private MirrorReflection reflection;
 
         #endregion

@@ -792,68 +792,116 @@ namespace Celeste
         public Player(Vector2 position, PlayerSpriteMode spriteMode)
             : base(new Vector2((int)position.X, (int)position.Y))
         {
+            // 设置对象的深度，这里表示对象的深度层级为玩家层级
             Depth = Depths.Player;
+            // 设置对象的标签，用于标识对象的类型或用途
             Tag = Tags.Persistent;
 
             // sprite
+            // 创建一个新的玩家精灵对象，并传入一个 spriteMode 参数
             Sprite = new PlayerSprite(spriteMode);
+            // 将头发对象添加到父对象中，并将其设置为玩家精灵的一个子对象
             Add(Hair = new PlayerHair(Sprite));
+            // 将玩家精灵对象添加到父对象中
             Add(Sprite);
+            // 设置头发对象的颜色为 NormalHairColor
             Hair.Color = NormalHairColor;
+            // 记录初始的头发数量，用于后续的逻辑判断或显示效果
             startHairCount = Sprite.HairCount;
 
             // sweat sprite
+            // 从 GFX.SpriteBank 创建一个名为 player_sweat 的出汗精灵对象
             sweatSprite = GFX.SpriteBank.Create("player_sweat");
+            // 将出汗精灵对象添加到父对象中
             Add(sweatSprite);
 
-            // physics
+            // physics 物理属性设置
+            // 设置碰撞器，用于检测对象之间的碰撞
             Collider = normalHitbox;
+            // 设置受伤框，用于标记对象的受伤区域
             hurtbox = normalHurtbox;
+            // 设置水平碰撞回调函数，当对象与其他对象发生水平碰撞时调用此函数
             onCollideH = OnCollideH;
+            // 设置垂直碰撞回调函数，当对象与其他对象发生垂直碰撞时调用此函数
             onCollideV = OnCollideV;
 
-            // states
+            // states 状态机的行为控制回调函数
             StateMachine = new StateMachine(23);
+            //public void SetCallbacks(int state, Func<int> onUpdate, Func<IEnumerator> coroutine = null, Action begin = null, Action end = null)
+            // (401) 正常状态，更新回调为NormalUpdate，运行纤程为null，行为开始回调为NormalBegin，行为结束回调为NormalEnd
             StateMachine.SetCallbacks(StNormal, NormalUpdate, null, NormalBegin, NormalEnd);
+            // (402) 攀爬状态，更新回调为，运行纤程为null，行为开始回调为ClimbBegin，行为结束回调为ClimbEnd
             StateMachine.SetCallbacks(StClimb, ClimbUpdate, null, ClimbBegin, ClimbEnd);
+            // (403) 冲刺状态，更新回调为DashUpdate，运行纤程为DashCoroutine，行为开始回调为DashBegin，行为结束回调为DashEnd
             StateMachine.SetCallbacks(StDash, DashUpdate, DashCoroutine, DashBegin, DashEnd);
+            // (403) 游泳状态，更新回调为SwimUpdate，运行纤程为null，行为开始回调为SwimBegin，行为结束回调为null
             StateMachine.SetCallbacks(StSwim, SwimUpdate, null, SwimBegin, null);
+            // (404) 加速状态，更新回调为BoosterUpdate，运行纤程为BoostCoroutine，行为开始回调为BoosterBegin，行为结束回调为BoosterEnd
             StateMachine.SetCallbacks(StBoost, BoostUpdate, BoostCoroutine, BoostBegin, BoostEnd);
+            // (405) 红色冲刺状态，更新回调为RedDashUpdate，运行纤程为RedDashCoroutine，行为开始回调为RedDashBegin，行为结束回调为RedDashEnd
             StateMachine.SetCallbacks(StRedDash, RedDashUpdate, RedDashCoroutine, RedDashBegin, RedDashEnd);
+            // (406) 被击中压扁状态，更新回调为BounceUpdate，运行纤程为null，行为开始回调为BounceBegin，行为结束回调为null
             StateMachine.SetCallbacks(StHitSquash, HitSquashUpdate, null, HitSquashBegin, null);
+            // (407) 发射状态，更新回调为LaunchedUpdate，运行纤程为LaunchUpdate，行为开始回调为LaunchedBegin，行为结束回调为null
             StateMachine.SetCallbacks(StLaunch, LaunchUpdate, null, LaunchBegin, null);
+            // (408) 捡起物品状态，更新回调为null，运行纤程为PickupCoroutine，行为开始回调为PickupBegin，行为结束回调为null
             StateMachine.SetCallbacks(StPickup, null, PickupCoroutine, null, null);
+            // (409) 梦幻冲刺状态，更新回调为DreamDashUpdate，运行纤程为null，行为开始回调为DreamDashBegin，行为结束回调为DreamDashEnd
             StateMachine.SetCallbacks(StDreamDash, DreamDashUpdate, null, DreamDashBegin, DreamDashEnd);
+            // (410) 在巅峰时发射角色的状态，更新回调为SummitLaunchUpdate，运行纤程为null，行为开始回调为SummitLaunchBegin，行为结束回调为null
             StateMachine.SetCallbacks(StSummitLaunch, SummitLaunchUpdate, null, SummitLaunchBegin, null);
+            // (411) 虚拟状态，更新回调为DummyUpdate，运行纤程为null，行为开始回调为DummyBegin，行为开始为DummyBegin，行为结束回调为null
             StateMachine.SetCallbacks(StDummy, DummyUpdate, null, DummyBegin, null);
+            // (412) 角色在介绍片段中行走的状态，更新回调为IntroWalkUpdate，运行纤程为null，行为开始回调为null，行为结束回调为null
             StateMachine.SetCallbacks(StIntroWalk, null, IntroWalkCoroutine, null, null);
+            // (413) 角色在介绍片段中跳跃的状态，更新回调为IntroJumpUpdate，运行纤程为null，行为开始回调为null，行为结束回调为null
             StateMachine.SetCallbacks(StIntroJump, null, IntroJumpCoroutine, null, null);
+            // (414) 角色在介绍片段中重生的状态，更新回调为null，运行纤程为null，行为开始回调为IntroRespawnBegin，行为结束回调为IntroRespawnEnd
             StateMachine.SetCallbacks(StIntroRespawn, null, null, IntroRespawnBegin, IntroRespawnEnd);
+            // (415) 角色在介绍片段中醒来的状态，更新回调为null，运行纤程为IntroWakeUpCoroutine，行为开始回调为null，行为结束回调为null
             StateMachine.SetCallbacks(StIntroWakeUp, null, IntroWakeUpCoroutine, null, null);
+            // (416) 角色在寺庙中掉落的状态，更新回调为TempleFallUpdate，运行纤程为TempleFallCoroutine，行为开始回调为null，行为结束回调为null
             StateMachine.SetCallbacks(StTempleFall, TempleFallUpdate, TempleFallCoroutine);
+            // (417) 角色在反射中下落的状态，更新回调为ReflectionFallUpdate，运行纤程为ReflectionFallCoroutine，行为开始回调为ReflectionFallBegin，行为结束回调为ReflectionFallEnd
             StateMachine.SetCallbacks(StReflectionFall, ReflectionFallUpdate, ReflectionFallCoroutine, ReflectionFallBegin, ReflectionFallEnd);
+            // (418) 角色在使用鸟冲刺教程中的状态，更新回调为BirdDashTutorialUpdate，运行纤程为BirdDashTutorialCoroutine，行为开始回调为BirdDashTutorialBegin，行为结束回调为null
             StateMachine.SetCallbacks(StBirdDashTutorial, BirdDashTutorialUpdate, BirdDashTutorialCoroutine, BirdDashTutorialBegin, null);
+            // (419) 角色被冻结的状态，更新回调为FreezeUpdate，运行纤程为null，行为开始回调为null，行为结束回调为null
             StateMachine.SetCallbacks(StFrozen, FrozenUpdate, null, null, null);
+            // (420) 角色在空中飞行的状态，更新回调为StarFlyUpdate，运行纤程为StarFlyCoroutine，行为开始回调为StarFlyBegin，行为结束回调为StarFlyEnd
             StateMachine.SetCallbacks(StStarFly, StarFlyUpdate, StarFlyCoroutine, StarFlyBegin, StarFlyEnd);
+            // (421) 角色通过卡带飞行的状态，更新回调为CassetteFlyUpdate，运行纤程为CassetteFlyCoroutine，行为开始回调为CassetteFlyBegin，行为结束回调为CassetteFlyEnd
             StateMachine.SetCallbacks(StCassetteFly, CassetteFlyUpdate, CassetteFlyCoroutine, CassetteFlyBegin, CassetteFlyEnd);
+            // (422) 角色被吸引的状态，更新回调为AttractUpdate，运行纤程为null，行为开始回调为AttractBegin，行为结束回调为AttractEnd
             StateMachine.SetCallbacks(StAttract, AttractUpdate, null, AttractBegin, AttractEnd);
+            // Shortcut function for adding a Component to the Entity's Components list 
+            // 将一个组件添加到实体的组件列表中的简便方法
             Add(StateMachine);
 
             // other stuff
+            // 添加 Leader 对象并设置其位置
             Add(Leader = new Leader(new Vector2(0, -8)));
+            // 设置 lastAim 向量为单位向量 x，通常用于保存角色的最后一次瞄准方向
             lastAim = Vector2.UnitX;
+            // 设置角色的初始朝向为右边
             Facing = Facings.Right;
+            // 创建一个新的 ChaserState 列表
             chaserStates = new List<ChaserState>();
+            // 创建一个新的 HashSet 来存储 Trigger 对象，用于管理与主角发生交互的 Trigger 对象
             triggersInside = new HashSet<Trigger>();
+            // 添加一个新的 VertexLight 对象，设置其位置、颜色、强度、尺寸等属性
             Add(Light = new VertexLight(normalLightOffset, Color.White, 1f, 32, 64));
+            // 添加一个新的 WaterInteraction 对象，其构造函数接受一个函数委托，该委托的作用是判断角色是否处于冲刺（StDash）或倒影坠落（StReflectionFall）状态
             Add(new WaterInteraction(() => { return StateMachine.State == StDash || StateMachine.State == StReflectionFall; }));
 
-            //Wind
+            //Wind 风行
             Add(new WindMover(WindMove));
 
+            // 声音源
             Add(wallSlideSfx = new SoundSource());
             Add(swimSurfaceLoopSfx = new SoundSource());
             
+            // 精灵动画帧改变时的处理
             Sprite.OnFrameChange = (anim) =>
             {
                 if (Scene != null && !Dead)
@@ -891,6 +939,7 @@ namespace Celeste
                 }
             };
 
+            // 精灵动画帧（最后一帧）
             Sprite.OnLastFrame = (anim) =>
             {
                 if (Scene != null && !Dead && Sprite.CurrentAnimationID == "idle" && !level.InCutscene && idleTimer > 3f)
@@ -928,6 +977,7 @@ namespace Celeste
                     Audio.Stop(idleSfx);
             };
 
+            // 反射对象
             Add(reflection = new MirrorReflection());
         }
 
@@ -1017,7 +1067,7 @@ namespace Celeste
 
         #endregion
 
-        #region Rendering
+        #region Rendering 渲染系统
 
         public override void Render()
         {
@@ -1092,7 +1142,7 @@ namespace Celeste
 
         #endregion
 
-        #region Updating
+        #region Updating 更新系统
 
         public override void Update()
         {
@@ -2117,7 +2167,7 @@ namespace Celeste
 
         #endregion
 
-        #region Jumps 'n' Stuff
+        #region Jumps 'n' Stuff N跳
         
         public bool OnSafeGround
         {
@@ -2602,7 +2652,7 @@ namespace Celeste
 
         #endregion
 
-        #region Ducking
+        #region Ducking 低头闪避
 
         public bool Ducking
         {
@@ -2750,7 +2800,7 @@ namespace Celeste
 
         #endregion
 
-        #region Physics
+        #region Physics 物理系统
 
         public void StartJumpGraceTime()
         {
@@ -3249,7 +3299,7 @@ namespace Celeste
 
         #endregion
 
-        #region Normal State
+        #region Normal State 正常状态 101
 
         private void NormalBegin()
         {
@@ -3516,7 +3566,7 @@ namespace Celeste
 
         #endregion
 
-        #region Climb State
+        #region Climb State 攀爬状态 102
 
         private bool IsTired
         {

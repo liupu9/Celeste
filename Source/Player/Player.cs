@@ -2552,60 +2552,122 @@ namespace Celeste
             Collider = was;
         }
 
+        // 定义一个私有的常量字段，表示侧向反弹的速度
         private const float SideBounceSpeed = 240;
+        
+        // 定义一个私有的常量字段，表示侧向反弹时在 X 轴方向上施加力量移动的时间
         private const float SideBounceForceMoveXTime = .3f;
 
+        /// <summary>
+        /// 使角色进行侧向反弹。这个方法用于修改角色的速度，让其在水平方向（X轴）上以指定的速度和方向移动，并在垂直方向（Y轴）上以预设的速度移动。同时，它还会设置一些与角色状态相关的参数。
+        /// </summary>
+        /// <param name="dir">角色的反弹方向，1表示向右，-1表示向左</param>
+        /// <param name="fromX">角色开始侧向反弹的X轴位置</param>
+        /// <param name="fromY">角色开始侧向反弹的Y轴位置</param>
         public void SideBounce(int dir, float fromX, float fromY)
         {
+            // 记录角色的原始碰撞器，可能用于之后恢复
             var was = Collider;
+
+            // 设置角色的碰撞器为正常碰撞器，可能是为了执行特定动作而更改了碰撞器类型
             Collider = normalHitbox;
             {
+                // 根据 fromY 和角色底部位置，计算并执行垂直方向上的移动，限制移动范围在-4到4之间
                 MoveV(Calc.Clamp(fromY - Bottom, -4, 4));
+
+                // 根据 dir 的值，决定角色在水平方向上的移动方向和距离
                 if (dir > 0)
                     MoveH(fromX - Left);
                 else if (dir < 0)
                     MoveH(fromX - Right);
+
+                // 如果库存中允许补充，执行补充冲刺能量的逻辑，可能与游戏中的资源系统相关
                 if (!Inventory.NoRefills)
                     RefillDash();
                 RefillStamina();
+
+                // 执行补充耐力的逻辑，可能与角色的耐力系统相关，确保角色在反弹后有足够的耐力进行接下来的动作
                 StateMachine.State = StNormal; // (517) 
 
+                // 设置角色的状态为 StNormal，表示正常状态，可能用于状态机的管理
+                StateMachine.State = StNormal;
+
+                // 重置跳跃宽限期计时器，可能用于控制角色跳跃的时机
                 jumpGraceTimer = 0;
+
+                // 设置可变跳跃计时器，用于控制角色在空中的停留时间，设置为 BounceVarJumpTime
                 varJumpTimer = BounceVarJumpTime;
+
+                // 启用自动跳跃功能，角色可能会在某些条件下自动跳跃，增加游戏的自动化和流畅性
                 AutoJump = true;
+
+                // 重置自动跳跃计时器，确保自动跳跃功能按照预期工作
                 AutoJumpTimer = 0;
+
+                // 重置冲刺攻击计时器，确保角色在反弹时不会施展冲刺攻击
                 dashAttackTimer = 0;
+
+                // 设置墙壁滑行计时器，用于判断角色是否可以在墙壁上滑行，设置为 WallSlideTime
                 wallSlideTimer = WallSlideTime;
                 forceMoveX = dir;
                 forceMoveXTimer = SideBounceForceMoveXTime;
+
+                // 重置墙壁助推计时器，确保角色不会获得额外的墙壁助推效果
                 wallBoostTimer = 0;
+
+                // 重置角色的起跳标记，即角色当前没有起跳，通常用于与墙壁跳跃等机制配合
                 launched = false;
 
+                // 设置角色的水平速度（X轴方向），速度等于侧向反弹速度乘以反弹方向，赋予角色侧向反弹的动力
                 Speed.X = SideBounceSpeed * dir;
+
+                // 设置角色的垂直速度（Y轴方向），等于反弹速度，使角色能够向上跳起
                 varJumpSpeed = Speed.Y = BounceSpeed;
 
+                // 根据角色的侧向反弹方向，施加一个方向震动，增强游戏的反馈和沉浸感
                 level.DirectionalShake(Vector2.UnitX * dir, .1f);
+
+                // 震动控制器，给予玩家触觉反馈，增强游戏体验
                 Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+
+                // 改变角色的精灵的缩放比例，可能是为了表现角色在侧向反弹时的动画效果
                 Sprite.Scale = new Vector2(1.5f, .5f);
             }
+            // 将角色的碰撞器恢复为原始碰撞器
             Collider = was;
         }
 
+        /// <summary>
+        /// 使角色进行反弹。这个方法用于修改角色的速度，让其在水平方向（X轴）上以指定的速度和方向移动，并在垂直方向（Y轴）上以预设的速度移动。同时，它还会设置一些与角色状态相关的参数。
+        /// </summary>
+        /// <param name="direction">角色的反弹方向，1 表示向右，0 表示向左（默认）</param>
         public void Rebound(int direction = 0)
         {
+            // 将角色的水平速度（X轴方向）设置为 direction 和 ReboundSpeedX 的乘积，以实现角色的反弹。这里 direction 默认为 0，表示角色将向左反弹
             Speed.X = direction * ReboundSpeedX;
+            // 将角色的垂直速度（Y轴方向）设置为 ReboundSpeedY，赋予角色向上的反弹速度
             Speed.Y = ReboundSpeedY;
+            // 记录角色跳跃时的速度，这里等于角色的垂直速度
             varJumpSpeed = Speed.Y;
+            // 设置角色的可变跳跃时间，用于控制角色在空中的停留时间，这里设置为 ReboundVarJumpTime
             varJumpTimer = ReboundVarJumpTime;
+            // 启用自动跳跃功能，角色将在遇到合适的条件时自动进行跳跃
             AutoJump = true;
+            // 重置自动跳跃计时器，从 0 开始计时，用于控制自动跳跃的时机和频率
             AutoJumpTimer = 0;
+            // 重置冲刺攻击计时器，确保角色在反弹时不会施展冲刺攻击
             dashAttackTimer = 0;
+            // 设置墙壁滑行计时器，用于判断角色是否可以在墙壁上滑行，这里设置为 WallSlideTime
             wallSlideTimer = WallSlideTime;
+            // 重置墙壁助推计时器，确保角色不会获得额外的墙壁助推效果
             wallBoostTimer = 0;
+            // 重置角色的起跳标记，即角色当前没有起跳，通常用于与墙壁跳跃等机制配合
             launched = false;
 
+            // 重置冲刺攻击计时器，确保角色在反弹时不会施展冲刺攻击
             dashAttackTimer = 0;
             forceMoveXTimer = 0;
+            // 将角色状态设置为 "StNormal"，代表角色处于正常状态，可能用于角色状态机的管理
             StateMachine.State = StNormal; // (518) 
         }
 

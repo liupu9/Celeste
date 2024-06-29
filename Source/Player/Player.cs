@@ -577,6 +577,7 @@ namespace Celeste
 
         // 私有成员变量
 
+        // (222-1) 关卡
         private Level level;
         // (223) 水平碰撞委托
         private Collision onCollideH;
@@ -825,7 +826,7 @@ namespace Celeste
             // 设置垂直碰撞回调函数，当对象与其他对象发生垂直碰撞时调用此函数
             onCollideV = OnCollideV;
 
-            // states 状态机的行为控制回调函数
+            // states 状态机的行为控制回调函数（统计为58个）
             StateMachine = new StateMachine(23);
             //public void SetCallbacks(int state, Func<int> onUpdate, Func<IEnumerator> coroutine = null, Action begin = null, Action end = null)
             // (401) 正常状态，更新回调为NormalUpdate，运行纤程为null，行为开始回调为NormalBegin，行为结束回调为NormalEnd
@@ -981,6 +982,10 @@ namespace Celeste
             Add(reflection = new MirrorReflection());
         }
 
+        /// <summary>
+        /// 重写实体的Added方法，将实体关联到场景中
+        /// </summary>
+        /// <param name="scene"></param>
         public override void Added(Scene scene)
         {
             base.Added(scene);
@@ -2087,7 +2092,7 @@ namespace Celeste
         
         #endregion
 
-        #region Transitions
+        #region Transitions 转场
 
         public void OnTransition()
         {
@@ -2182,11 +2187,23 @@ namespace Celeste
             }
         }
         
+        // 定义一个私有常量 LaunchedBoostCheckSpeedSq，它可能用于检查角色是否具有足够的速度来启动助推。单位可能是平方像素每秒
         private const float LaunchedBoostCheckSpeedSq = 100 * 100;
+
+        // 定义一个私有常量 LaunchedJumpCheckSpeedSq，它可能用于检查角色是否具有足够的速度来执行跳跃动作
         private const float LaunchedJumpCheckSpeedSq = 220 * 220;
+
+        // 定义一个私有常量 LaunchedMinSpeedSq，它可能代表角色在启动助推或执行跳跃之前所需的最小速度。这可能是一个阈值，低于该阈值角色无法执行特定动作
         private const float LaunchedMinSpeedSq = 140 * 140;
+
+        // 定义一个私有常量 LaunchedDoubleSpeedSq，这个名字表明它可能与角色的速度提升有关，可能表示角色能够达到的双倍速度。这可能用于奖励系统或者角色升级机制
         private const float LaunchedDoubleSpeedSq = 150 * 150;
 
+        /// <summary>
+        /// 检查角色是否具备启动助推的条件。
+        /// 这个方法会检查角色的提升速度（LiftBoost）和移动速度（Speed），当且仅当两者的长度平方都满足特定的速度阈值时，方法会返回 true，同时将 launched 变量设置为 true，表示助推已经启动。
+        /// 如果角色的速度不满足条件，方法会返回 false，同时将 launched 变量设置为 false，表示助推未启动。
+        /// </summary>
         private bool LaunchedBoostCheck()
         {
             if (LiftBoost.LengthSquared() >= LaunchedBoostCheckSpeedSq && Speed.LengthSquared() >= LaunchedJumpCheckSpeedSq)
@@ -2201,74 +2218,152 @@ namespace Celeste
             }
         }
 
+        /// <summary>
+        /// 执行角色的跳跃动作，并可以指定是否播放粒子效果和音效
+        /// </summary>
+        /// <param name="particles">是否播放跳跃粒子效果。默认为 True，表示播放</param>
+        /// <param name="playSfx">是否播放跳跃音效。默认为 True，表示播放</param>
         public void Jump(bool particles = true, bool playSfx = true)
         {
+            // 清空输入缓冲区中的跳跃指令，确保每次跳跃只响应一次
             Input.Jump.ConsumeBuffer();
+
+            // 设置跳跃的额外时间为 0，这个值可能用于控制跳跃的时机或持续时间
             jumpGraceTimer = 0;
+
+            // 设置随机跳跃计时器的值，VarJumpTime 可能是一个字段，定义了随机跳跃的时间间隔
             varJumpTimer = VarJumpTime;
+
+            // 禁用自动跳跃功能，AutoJump 可能是一个字段或属性，默认为 false
             AutoJump = false;
+
+            // 重置冲刺攻击计时器为 0，可能是为了防止冲刺与跳跃同时进行
             dashAttackTimer = 0;
+
+            // 设置贴着墙滑行的计时器为 WallSlideTime，可能用于控制角色在墙上滑行的时间
             wallSlideTimer = WallSlideTime;
+
+            // 将wallBoostTimer重置为0
             wallBoostTimer = 0;
 
+            // 根据角色的移动方向（moveX）增加水平速度分量。JumpHBoost可能是一个字段或属性，定义了跳跃时水平方向的助力
             Speed.X += JumpHBoost * moveX;
+
+            // 设置垂直速度为JumpSpeed，这可能是一个字段或属性，确定角色跳跃的初始垂直速度
             Speed.Y = JumpSpeed;
+
+            // 将LiftBoost添加到速度中。LiftBoost可能是一个字段或属性，代表额外的垂直力，如风力或其他环境因素
             Speed += LiftBoost;
+
+            // 将当前的垂直速度作为随机跳跃速度保存，varJumpSpeed可能用于控制角色在空中的随机行为
             varJumpSpeed = Speed.Y;
 
+            // 检查角色是否满足启动助力跳跃的条件。LaunchedBoostCheck可能是一个方法，根据角色的状态返回一个布尔值
             LaunchedBoostCheck();
 
+            // 如果 playSfx 为 true，播放跳跃音效
             if (playSfx)
             {
+                // 如果 launched 为 true，播放有帮助的辅助跳跃音效
                 if (launched)
                     Play(Sfxs.char_mad_jump_assisted);
 
+                // 如果 dreamJump 为 true，播放有关梦境跳跃的音效
                 if (dreamJump)
                     Play(Sfxs.char_mad_jump_dreamblock);
+                // 否则，播放默认的跳跃音效
                 else
                     Play(Sfxs.char_mad_jump);
             }
 
+            // 设置角色的精灵图 scale，这里将 Y 缩放为 1.4 倍，X 缩放为 0.6 倍，可能用于调整角色外观
             Sprite.Scale = new Vector2(.6f, 1.4f);
+
+            // 如果 particles 为 true，角色底部中心释放 4 个向上的粒子效果，Dust.Burst 可能是一个粒子系统的 API
             if (particles)
                 Dust.Burst(BottomCenter, Calc.Up, 4);
 
+            // 更新跳跃统计，将 SaveData.Instance 类中的 TotalJumps 字段加一，用于记录角色的总跳跃次数
             SaveData.Instance.TotalJumps++;
         }
 
+        /// <summary>
+        /// 执行角色的超级跳跃动作
+        /// 这个方法首先会重置一些与跳跃相关的计时器和状态，然后根据角色的面向设置水平速度，同时设置垂直速度和角色的跳跃速度。接着，方法会根据角色当前是否蹲下（Ducking）来决定播放不同的跳跃音效，并调整角色的速度。此外，它还会设置角色跳跃后的速度，标记角色为已发射（launched），并调整角色的精灵图比例。最后，方法会播放粒子效果，并更新角色的总跳跃次数。
+        /// </summary>
         private void SuperJump()
         {
+            // 清空跳跃输入缓冲区
             Input.Jump.ConsumeBuffer();
+
+            // 重置跳跃额外时间计时器
             jumpGraceTimer = 0;
+
+            // 设置随机跳跃计时器
             varJumpTimer = VarJumpTime;
+
+            // 禁用自动跳跃
             AutoJump = false;
+
+            // 重置冲刺攻击计时器
             dashAttackTimer = 0;
+
+            // 设置墙滑计时器
             wallSlideTimer = WallSlideTime;
+
+            // 重置墙面助推计时器
             wallBoostTimer = 0;
 
+            // 根据角色的面向调整水平速度
             Speed.X = SuperJumpH * (int)Facing;
+
+            // 设置垂直速度
             Speed.Y = JumpSpeed;
+
+            // 添加提升助推效果
             Speed += LiftBoost;
 
+            // 播放跳跃音效
             Play(Sfxs.char_mad_jump);
 
+            // 检查角色是否在蹲下状态
             if (Ducking)
             {
+                // 角色不再蹲下
                 Ducking = false;
+
+                // 调整水平速度
                 Speed.X *= DuckSuperJumpXMult;
+
+                // 调整垂直速度
                 Speed.Y *= DuckSuperJumpYMult;
+
+                // 播放超级滑行跳跃音效
                 Play(Sfxs.char_mad_jump_superslide);
             }
             else
+            {
+                // 播放超级跳跃音效
                 Play(Sfxs.char_mad_jump_super);
+            }
 
+            // 保存当前垂直速度用于随机跳跃行为
             varJumpSpeed = Speed.Y;
+
+            // 标记角色已起跳
             launched = true;
 
+            // 调整角色精灵图比例
             Sprite.Scale = new Vector2(.6f, 1.4f);
 
+            /**
+             * 播放粒子效果
+             * 这里的BottomCenter很可能是角色的底部中心位置，而Calc.Up表示向上的方向
+             * 4可能表示释放4个粒子
+             */
             Dust.Burst(BottomCenter, Calc.Up, 4);
 
+            // 更新角色的总跳跃次数
             SaveData.Instance.TotalJumps++;
         }
 
@@ -2532,6 +2627,9 @@ namespace Celeste
             StateMachine.State = StNormal;
         }
 
+        /// <summary>
+        /// 最大冲刺次数
+        /// </summary>
         public int MaxDashes
         {
             get
@@ -2543,6 +2641,10 @@ namespace Celeste
             }
         }
 
+        /// <summary>
+        /// 重置冲刺
+        /// </summary>
+        /// <returns>是否有真实的提升</returns>
         public bool RefillDash()
         {
             if (Dashes < MaxDashes)
@@ -2554,6 +2656,10 @@ namespace Celeste
                 return false;
         }
 
+        /// <summary>
+        /// 使用恢复功能
+        /// </summary>
+        /// <returns>是否真实提升（冲刺次数或攀爬耐力之一）</returns>
         public bool UseRefill()
         {
             if (Dashes < MaxDashes || Stamina < ClimbTiredThreshold)
@@ -2566,20 +2672,32 @@ namespace Celeste
                 return false;
         }
 
+        /// <summary>
+        /// 重置（攀爬）体力至最大值110
+        /// </summary>
         public void RefillStamina()
         {
             Stamina = ClimbMaxStamina;
         }
 
+        /// <summary>
+        /// 死亡
+        /// </summary>
+        /// <param name="direction">方向</param>
+        /// <param name="evenIfInvincible">是否不可战胜的</param>
+        /// <param name="registerDeathInStats">是否注册了死亡统计</param>
+        /// <returns>玩家死亡形态</returns>
         public PlayerDeadBody Die(Vector2 direction, bool evenIfInvincible = false, bool registerDeathInStats = true)
         {
             var session = level.Session;
             bool invincible = (!evenIfInvincible && SaveData.Instance.AssistMode && SaveData.Instance.Assists.Invincible);
 
+            // 非死亡、非无敌、非在反射中下落的状态
             if (!Dead && !invincible && StateMachine.State != StReflectionFall)
             {
                 Stop(wallSlideSfx);
 
+                // 如果注册了死亡统计，那么就记录：死亡次数、死亡关卡、死亡区域。
                 if (registerDeathInStats)
                 {
                     session.Deaths++;
@@ -2587,7 +2705,7 @@ namespace Celeste
                     SaveData.Instance.AddDeath(session.Area);
                 }
 
-                // has gold strawb?
+                // has gold strawb? 是否有草莓
                 Strawberry goldenStrawb = null;
                 foreach (var strawb in Leader.Followers)
                     if (strawb.Entity is Strawberry && (strawb.Entity as Strawberry).Golden && !(strawb.Entity as Strawberry).Winged)
@@ -2632,14 +2750,21 @@ namespace Celeste
             return null;
         }
 
+        /// <summary>
+        /// 用于计算和限制在一个二维空间中的提升速度。LiftBoost属性的目的是提供一个Vector2对象，该对象在给定
+        /// LiftSpeed的基础上，经过X和Y方向的限制后的提升速度。这种限制可能用于确保物体在游戏世界中的移动受到
+        /// 控制，以防止它在X方向上移动得太快，或者在Y方向上违反物理规则向上移动（或向下掉落）得太快。这样的属性
+        /// 在游戏开发中用于精确控制角色或物体的移动，确保它们的行为符合游戏的逻辑和物理模型。
+        /// </summary>
         private Vector2 LiftBoost
         {
             get
             {
+                // 在原始LiftSpeed的基础上，不能超过阈值，返回修改后的值。
                 Vector2 val = LiftSpeed;
 
                 if (Math.Abs(val.X) > LiftXCap)
-                    val.X = LiftXCap * Math.Sign(val.X);
+                    val.X = LiftXCap * Math.Sign(val.X);  // Math.Sign函数用来保留原始的X值的符号（方向）
 
                 if (val.Y > 0)
                     val.Y = 0;
@@ -3325,6 +3450,10 @@ namespace Celeste
 
         private const float SpacePhysicsMult = .6f;
 
+        /// <summary>
+        /// 正常状态的更新回调onUpdate
+        /// </summary>
+        /// <returns>StNormal</returns>
         private int NormalUpdate()
         {
             //Use Lift Boost if walked off platform
@@ -3568,6 +3697,9 @@ namespace Celeste
 
         #region Climb State 攀爬状态 102
 
+        /// <summary>
+        /// 判断当前的耐力是否已经不足以攀爬[20,110]
+        /// </summary>
         private bool IsTired
         {
             get
@@ -3597,50 +3729,97 @@ namespace Celeste
 
         private FMOD.Studio.EventInstance conveyorLoopSfx;
 
+        /// <summary>
+        /// 当角色开始攀爬时执行此方法。它会进行一系列的设置，包括重置自动跳跃状态，设置速度，重置计时器，并尝试将角色移动到一个合理的攀爬位置。同时，它还会播放一个抓取音效。
+        /// </summary>
         private void ClimbBegin()
         {
+            // 禁用自动跳跃功能
             AutoJump = false;
+            // 清除水平速度
             Speed.X = 0;
+            // 垂直速度乘以攀抓时的y轴倍增系数
             Speed.Y *= ClimbGrabYMult;
+            // 设置wallSlideTimer变量为WallSlideTime，表示角色可以在墙上滑行的时间
             wallSlideTimer = WallSlideTime;
+            // 设置climbNoMoveTimer变量为ClimbNoMoveTime，表示角色在攀爬时不移动的时间
             climbNoMoveTimer = ClimbNoMoveTime;
+            // wallBoostTimer重置为0
             wallBoostTimer = 0;
+            // lastClimbMove重置为0
             lastClimbMove = 0;
-            
+
+
+            // 控制器震动：中强度，短时长
             Input.Rumble(RumbleStrength.Medium, RumbleLength.Short);
 
+            // 让角色自动贴近攀爬的墙面，循环次数为ClimbCheckDist，以确保角色处于一个正确的位置
             for (int i = 0; i < ClimbCheckDist; i++)
+            {
+                // 判断前方是否没有障碍物（根据方向Facing判断向左还是向右）
                 if (!CollideCheck<Solid>(Position + Vector2.UnitX * (int)Facing))
+                {
+                    // 移动角色到没有障碍物的方向
                     Position += Vector2.UnitX * (int)Facing;
+                }
                 else
+                {
+                    // 如果前方有障碍物，提前终止循环
                     break;
+                }
+            }
 
             // tell the thing we grabbed it
+            // 确定角色已抓住攀爬的墙面
             var platform = SurfaceIndex.GetPlatformByPriority(CollideAll<Solid>(Position + Vector2.UnitX * (int)Facing, temp));
             if (platform != null)
+            {
+                // 播放抓取物品或表面的音效，参数为SurfaceIndex.Param，还有根据角色面对的方向获取的墙面音效索引
                 Play(Sfxs.char_mad_grab, SurfaceIndex.Param, platform.GetWallSoundIndex(this, (int)Facing));
+            }
         }
 
+        /// <summary>
+        /// 当角色结束攀爬时执行此方法。它会进行一系列的设置，包括停止播放任何与攀爬相关的循环音效，重置速度保留计时器，并检查角色的汗水动画。如果角色的汗水动画存在且当前动画不是跳跃动画，它会将汗水动画设置为空闲状态，以表示角色已经停止攀爬。这个方法确保了角色在结束攀爬时能够正确地过渡回正常状态。
+        /// </summary>
         private void ClimbEnd()
         {
+            // 检查conveyorLoopSfx对象是否存在
             if (conveyorLoopSfx != null)
             {
+                // 设置conveyorLoopSfx的"end"参数值为1
                 conveyorLoopSfx.setParameterValue("end", 1);
+                // 释放conveyorLoopSfx的资源
                 conveyorLoopSfx.release();
+                // 将conveyorLoopSfx对象设置为null，以便于垃圾回收
                 conveyorLoopSfx = null;
             }
+
+            // 重置wallSpeedRetentionTimer为0，可能用于控制角色在墙上的速度保留时间
             wallSpeedRetentionTimer = 0;
+
+            // 检查sweatSprite对象是否存在
             if (sweatSprite != null && sweatSprite.CurrentAnimationID != "jump")
+                // 如果sweatSprite对象存在，并且当前播放的动画不是"jump"，则切换到"idle"动画，表示角色在休息或等待
                 sweatSprite.Play("idle");
         }
 
+
+        // 定义一个私有常量 WallBoosterSpeed，其值为 -160f，可能代表角色在墙边获得的反向助推速度
         private const float WallBoosterSpeed = -160f;
+        // 定义一个私有常量 WallBoosterLiftSpeed，其值为 -80，这个负值可能表示角色在墙边助推时的上升速度
         private const float WallBoosterLiftSpeed = -80;
+        // 定义一个私有常量 WallBoosterAccel，其值为 600f，可能表示角色在墙边助推时的加速度大小
         private const float WallBoosterAccel = 600f;
+        // 定义一个私有常量 WallBoostingHopHSpeed，其值为 100f，可能表示角色在墙边助推时的水平跳跃速度
         private const float WallBoostingHopHSpeed = 100f;
+        // 定义一个私有常量 WallBoosterOverTopSpeed，其值为 -180f，可能表示角色在墙边助推时越过墙头后的速度
         private const float WallBoosterOverTopSpeed = -180f;
+        // 定义一个私有常量 IceBoosterSpeed，其值为 40，可能表示角色在冰面上助推时的速度
         private const float IceBoosterSpeed = 40;
+        // 定义一个私有常量 IceBoosterAccel，其值为 300f，可能表示角色在冰面上助推时的加速度大小
         private const float IceBoosterAccel = 300f;
+        // 定义一个私有布尔变量 wallBoosting，可能用于标记角色是否正在进行墙边助推动作
         private bool wallBoosting;
 
         private int ClimbUpdate()
@@ -3649,7 +3828,7 @@ namespace Celeste
             
             //Refill stamina on ground
             if (onGround)
-                Stamina = ClimbMaxStamina;
+                Stamina = ClimbMaxStamina; // 两种写法，或RefillStamina()
 
             //Wall Jump
             if (Input.Jump.Pressed && (!Ducking || CanUnDuck))
@@ -5916,6 +6095,7 @@ namespace Celeste
             sfx.Play(sound);
         }
 
+        // 停止（声音）
         public void Stop(SoundSource sfx)
         {
             if (sfx.Playing)

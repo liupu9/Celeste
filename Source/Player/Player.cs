@@ -1660,7 +1660,7 @@ namespace Celeste
 
         #endregion
 
-        #region Hair & Sprite
+        #region Hair & Sprite 头发和精灵（头发的面积占比很大，也是本游戏的特色之一）
 
         private void StartHair()
         {
@@ -1678,7 +1678,7 @@ namespace Celeste
                 applyGravity = false;
             }
             else if (Dashes == 0 && Dashes < MaxDashes)
-                Hair.Color = Color.Lerp(Hair.Color, UsedHairColor, 6f * Engine.DeltaTime);
+                Hair.Color = Color.Lerp(Hair.Color, UsedHairColor, 6f * Engine.DeltaTime); // 颜色插值
             else
             {
                 Color color;
@@ -2853,7 +2853,7 @@ namespace Celeste
 
         #endregion
 
-        #region Holding
+        #region Holding 当前持有物体
 
         public Holdable Holding
         {
@@ -2978,6 +2978,24 @@ namespace Celeste
             }
         }
 
+        /// <summary>
+        /// 执行风力移动操作。这个方法会根据传入的二维向量 move 来决定角色在水平和垂直方向上的移动。
+        /// 方法首先检查角色是否符合移动条件（没有刚重生、没有风、在控制中且不处于特定状态）。
+        /// 如果角色在水平方向上移动（move.X 不等于 0 且不处于攀爬状态），方法会进行以下操作：
+        /// 1. 设置 windTimeout 为 0.2f。
+        /// 2. 根据 move.X 的符号设置 windDirection.X，表示风向。
+        /// 3. 使用 CollideCheck<Solid> 检查角色是否会与固体障碍物碰撞。
+        /// 4. 如果不会碰撞，根据 Ducking 和 onGround 的状态调整 move.X 的值。
+        /// 5. 根据 move.X 的值调整角色的水平位置，确保角色不会移出游戏边界或陷入墙壁。
+        /// 6. 调用 MoveH(move.X) 方法使角色水平移动。
+        /// 如果角色在垂直方向上移动（move.Y 不等于 0），方法会进行以下操作：
+        /// 1. 设置 windTimeout 为 0.2f。
+        /// 2. 根据 move.Y 的符号设置 windDirection.Y，表示风向。
+        /// 3. 检查角色的速度方向或者角色是否在空中（Speed.Y < 0 或者 OnGround() 为 false）。
+        /// 4. 如果角色处于攀爬状态，且 move.Y > 0 且 climbNoMoveTimer 小于等于 0，将 move.Y 的值减小到原来的 0.4 倍，模拟攀爬时风力的效果。
+        /// 5. 调用 MoveV(move.Y) 方法使角色垂直移动。
+        /// </summary>
+        /// <param name="move">一个二维向量，move 的 x 分量表示水平移动，y 分量表示垂直移动。正值表示向右或向上，负值表示向左或向下</param>
         private void WindMove(Vector2 move)
         {
             if (!JustRespawned && noWindTimer <= 0 && InControl && StateMachine.State != StBoost && StateMachine.State != StDash && StateMachine.State != StSummitLaunch)
@@ -3024,6 +3042,7 @@ namespace Celeste
                 }
             }
         }
+
 
         private void OnCollideH(CollisionData data)
         {
@@ -4111,9 +4130,12 @@ namespace Celeste
             get; private set;
         }
 
+        /// <summary>
+        /// 调用冲刺结束事件（统一处理）。
+        /// </summary>
         private void CallDashEvents()
         {
-            if (!calledDashEvents)
+            if (!calledDashEvents) // 防止重复调用，加了这个开关
             {
                 calledDashEvents = true;
                 if (CurrentBooster == null)
@@ -4162,30 +4184,61 @@ namespace Celeste
             }
         }
 
+        /// <summary>
+        /// 这个方法初始化角色的冲刺状态，包括重置各种计时器，设置冲刺事件标志，以及执行与冲刺开始相关的其他操作。
+        /// 冲刺一开始的刹那，做的事情是可以说清楚的，综合起来的效果才是稳定可靠、效果满满的。
+        /// </summary>
         private void DashBegin()
         {
+            // 重置冲刺事件标志，确保冲刺事件可以被正确调用
             calledDashEvents = false;
+
+            // 记录冲刺开始时角色是否在地面上，用于后续的逻辑判断
             dashStartedOnGround = onGround;
+
+            // 标记角色是否已经跳起，初始化为 false
             launched = false;
 
+            // 如果引擎时间比例大于 0.25f，冻结游戏画面 0.05f 秒，用于表现冲刺的起始效果
             if (Engine.TimeRate > 0.25f)
                 Celeste.Freeze(.05f);
+
+            // 设置冲刺冷却计时器，用于控制冲刺动作的冷却间隔
             dashCooldownTimer = DashCooldown;
+
+            // 设置冲刺填充冷却计时器，用于控制冲刺能量的恢复间隔
             dashRefillCooldownTimer = DashRefillCooldown;
+
+            // 标记冲刺状态为已开始，用于区分冲刺动作的不同阶段
             StartedDashing = true;
+
+            // 设置墙壁滑行计时器，用于控制角色在墙壁上滑行的时间
             wallSlideTimer = WallSlideTime;
+
+            // 重置冲刺轨迹计时器，用于控制冲刺轨迹的显示和隐藏
             dashTrailTimer = 0;
 
+            // 在角色中心位置添加一个爆发效果，用于表现冲刺时的气流或能量释放
             level.Displacement.AddBurst(Center, .4f, 8, 64, .5f, Ease.QuadOut, Ease.QuadOut);
 
+            // 触发控制器震动，用于增强冲刺的触感反馈
             Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
 
+            // 设置冲刺攻击计时器，用于控制冲刺攻击的持续时间
             dashAttackTimer = DashAttackTime;
+
+            // 记录冲刺前的角色速度，用于还原角色状态或计算冲刺后的速度变化
             beforeDashSpeed = Speed;
+
+            // 重置角色速度为零，为冲刺提供初始速度
             Speed = Vector2.Zero;
+
+            // 重置冲刺方向为零向量，准备接受新的冲刺方向输入
             DashDir = Vector2.Zero;
 
+            // 检查角色是否在空中并且处于蹲下状态，并且可以取消蹲下
             if (!onGround && Ducking && CanUnDuck)
+                // 如果条件满足，将角色的蹲下状态设置为 false，即角色不再蹲下
                 Ducking = false;
         }
 
@@ -4194,6 +4247,10 @@ namespace Celeste
             CallDashEvents();
         }
 
+        /// <summary>
+        /// 冲刺过程
+        /// </summary>
+        /// <returns></returns>
         private int DashUpdate()
         {
             StartedDashing = false;
@@ -4268,91 +4325,138 @@ namespace Celeste
             return StDash;
         }
 
+        /// <summary>
+        /// DashCoroutine 是一个协同程序，用于处理角色的冲刺行为。这个方法在角色进行冲刺动作时执行，控制角色的速度、方向、动画和视觉效果。
+        /// 角色可以通过上一次的瞄准方向或指定的冲刺方向开始冲刺。
+        /// </summary>
+        /// <returns>一个 IEnumerator 对象，用于在冲刺过程中控制流程和动画。这个协同程序会等待一段时间，执行冲刺行为，并在冲刺结束后恢复角色的正常状态。</returns>
         private IEnumerator DashCoroutine()
         {
+            // 协同程序的第一个yield，用于等待下一帧
             yield return null;
 
+            // 获取冲刺的方向，可以是上一次的瞄准方向或指定的OverrideDashDirection
             var dir = lastAim;
             if (OverrideDashDirection.HasValue)
                 dir = OverrideDashDirection.Value;
 
+            // 根据冲刺方向和速度计算新的冲刺速度向量
             var newSpeed = dir * DashSpeed;
+
+            // 如果冲刺的水平方向与之前的速度方向相同，且绝对值小于上次速度，保留之前的速度
             if (Math.Sign(beforeDashSpeed.X) == Math.Sign(newSpeed.X) && Math.Abs(beforeDashSpeed.X) > Math.Abs(newSpeed.X))
                 newSpeed.X = beforeDashSpeed.X;
+
+            // 设置角色的速度为新的冲刺速度
             Speed = newSpeed;
 
+            // 检查角色是否冲入水中，如果是，应用游泳冲刺速度乘数
             if (CollideCheck<Water>())
                 Speed *= SwimDashSpeedMult;
 
+            // 设置冲刺方向
             DashDir = dir;
+
+            // 在角色所在的场景中，根据冲刺方向进行屏幕抖动效果
             SceneAs<Level>().DirectionalShake(DashDir, .2f);
 
+            // 如果冲刺方向在X轴上有分量，更新角色的面向方向
             if (DashDir.X != 0)
                 Facing = (Facings)Math.Sign(DashDir.X);
 
+            // 调用冲刺事件
             CallDashEvents();
 
             //Feather particles
+            // 羽毛粒子效果，只有在角色从星之飞翔状态进入冲刺时才会产生
             if (StateMachine.PreviousState == StStarFly)
                 level.Particles.Emit(FlyFeather.P_Boost, 12, Center, Vector2.One * 4, (-dir).Angle());
 
             //Dash Slide
+            // 如果角色在地面上冲刺，并且冲刺方向在X轴上有分量且Y轴向上，模拟冲刺滑行效果
             if (onGround && DashDir.X != 0 && DashDir.Y > 0 && Speed.Y > 0 
                 && (!Inventory.DreamDash || !CollideCheck<DreamBlock>(Position + Vector2.UnitY)))
             {
+                // 重置冲刺方向
                 DashDir.X = Math.Sign(DashDir.X);
                 DashDir.Y = 0;
+                // 重置速度Y分量
                 Speed.Y = 0;
+                // 增加速度X分量
                 Speed.X *= DodgeSlideSpeedMult;
+                // 设置角色为蹲下状态
                 Ducking = true;
             }
             
+            // 冲刺时触发斩击特效
             SlashFx.Burst(Center, DashDir.Angle());
+            // 生成冲刺轨迹
             CreateTrail();
+            // 设置冲刺轨迹的计时器
             dashTrailTimer = .08f;
 
             //Swap Block check
+            // 检查是否与交换块交互
             if (DashDir.X != 0 && Input.Grab.Check)
             {
+                // 尝试获取角色前方的交换块
                 var swapBlock = CollideFirst<SwapBlock>(Position + Vector2.UnitX * Math.Sign(DashDir.X));
+                // 如果有交换块并且其方向与冲刺方向相同
                 if (swapBlock != null && swapBlock.Direction.X == Math.Sign(DashDir.X))
                 {
+                    // 角色状态改为攀爬
                     StateMachine.State = StClimb;
+                    // 速度重置
                     Speed = Vector2.Zero;
+                    // 协同程序结束
                     yield break;
                 }
             }
 
             //Stick to Swap Blocks
+            // 处理交换块的粘性（Stick to Swap Blocks）效果
             Vector2 swapCancel = Vector2.One;
             foreach (SwapBlock swapBlock in Scene.Tracker.GetEntities<SwapBlock>())
             {
+                // 检查是否与交换块在Y方向上有碰撞
                 if (CollideCheck(swapBlock, Position + Vector2.UnitY))
                 {
+                    // 如果交换块存在并且正在交换
                     if (swapBlock != null && swapBlock.Swapping)
                     {
+                        // 如果冲刺方向在X轴上有分量并且与交换块的方向相同，那么取消冲刺的X轴速度增益效果，以防止角色“粘”在交换块上。
                         if (DashDir.X != 0 && swapBlock.Direction.X == Math.Sign(DashDir.X))
                             Speed.X = swapCancel.X = 0;
+                        // 如果冲刺方向在Y轴上有分量并且与交换块的方向相同，那么取消冲刺的Y轴速度增益效果，以防止角色“粘”在交换块上。
                         if (DashDir.Y != 0 && swapBlock.Direction.Y == Math.Sign(DashDir.Y))
                             Speed.Y = swapCancel.Y = 0;
                     }
                 }
             }
 
+            // 等待冲刺时间结束
             yield return DashTime;
 
+            // 冲刺结束时生成轨迹
             CreateTrail();
 
+            // 冲刺结束后自动跳跃
             AutoJump = true;
             AutoJumpTimer = 0;
+
+            // 如果冲刺方向向下，重置速度为冲刺结束时的速度，并应用交换取消效果，以确保角色在落地后不会继续冲刺。
             if (DashDir.Y <= 0)
             {
                 Speed = DashDir * EndDashSpeed;
                 Speed.X *= swapCancel.X;
                 Speed.Y *= swapCancel.Y;
             }
+
+            // 如果速度Y分量小于0，增加速度Y分量，模拟上跳效果
             if (Speed.Y < 0)
                 Speed.Y *= EndDashUpMult;
+
+            // 角色状态恢复为正常
             StateMachine.State = StNormal;
         }
 

@@ -999,36 +999,36 @@ namespace Celeste
             switch (IntroType)
             {
                 case IntroTypes.Respawn:
-                    StateMachine.State = StIntroRespawn;
+                    StateMachine.State = StIntroRespawn; // (501) 设置（改变）状态机的状态。共计51处。返回正常状态20处。
                     JustRespawned = true;
                     break;
 
                 case IntroTypes.WalkInRight:
                     IntroWalkDirection = Facings.Right;
-                    StateMachine.State = StIntroWalk;
+                    StateMachine.State = StIntroWalk; // (502) 
                     break;
 
                 case IntroTypes.WalkInLeft:
                     IntroWalkDirection = Facings.Left;
-                    StateMachine.State = StIntroWalk;
+                    StateMachine.State = StIntroWalk; // (503) 
                     break;
 
                 case IntroTypes.Jump:
-                    StateMachine.State = StIntroJump;
+                    StateMachine.State = StIntroJump; // (504) 
                     break;
 
                 case IntroTypes.WakeUp:
                     Sprite.Play("asleep");
                     Facing = Facings.Right;
-                    StateMachine.State = StIntroWakeUp;
+                    StateMachine.State = StIntroWakeUp; // (505) 
                     break;
 
                 case IntroTypes.None:
-                    StateMachine.State = StNormal;
+                    StateMachine.State = StNormal; // (506) 
                     break;
 
                 case IntroTypes.Fall:
-                    StateMachine.State = StReflectionFall;
+                    StateMachine.State = StReflectionFall; // (507) 
                     break;
 
                 case IntroTypes.TempleMirrorVoid:
@@ -1045,7 +1045,7 @@ namespace Celeste
         {
             Sprite.Play("asleep");
             Facing = Facings.Right;
-            StateMachine.State = StDummy;
+            StateMachine.State = StDummy; // (508) 
             StateMachine.Locked = true;
             DummyAutoAnimate = false;
             DummyGravity = false;
@@ -1498,7 +1498,7 @@ namespace Celeste
                 }
             }
             else if (StateMachine.State == StNormal && SwimCheck())
-                StateMachine.State = StSwim;
+                StateMachine.State = StSwim; // (509) 
             else if (StateMachine.State == StClimb && SwimCheck())
             {
                 var water = CollideFirst<Water>(Position);
@@ -1508,10 +1508,10 @@ namespace Celeste
                         if (MoveVExact(-1))
                             break;
                     if (SwimCheck())
-                        StateMachine.State = StSwim;
+                        StateMachine.State = StSwim; // (510) 
                 }
                 else
-                    StateMachine.State = StSwim;
+                    StateMachine.State = StSwim; // (511) 
             }
 
             // wall slide SFX
@@ -2137,7 +2137,7 @@ namespace Celeste
         {
             if (StateMachine.State != StRedDash && StateMachine.State != StReflectionFall && StateMachine.State != StStarFly)
             {
-                StateMachine.State = StNormal;
+                StateMachine.State = StNormal; // (512) 
 
                 Speed.Y = Math.Max(0, Speed.Y);
                 AutoJump = false;
@@ -2158,9 +2158,9 @@ namespace Celeste
                 varJumpSpeed = Speed.Y = JumpSpeed;
 
                 if (StateMachine.State == StSummitLaunch)
-                    StateMachine.State = StIntroJump;
+                    StateMachine.State = StIntroJump; // (513) 
                 else
-                    StateMachine.State = StNormal;
+                    StateMachine.State = StNormal; // (514) 
 
                 AutoJump = true;
                 AutoJumpTimer = 0;
@@ -2495,7 +2495,7 @@ namespace Celeste
                 if (!Inventory.NoRefills)
                     RefillDash();
                 RefillStamina();
-                StateMachine.State = StNormal;
+                StateMachine.State = StNormal; // (515) 
 
                 jumpGraceTimer = 0;
                 varJumpTimer = BounceVarJumpTime;
@@ -2530,7 +2530,7 @@ namespace Celeste
                 if (!Inventory.NoRefills)
                     RefillDash();
                 RefillStamina();
-                StateMachine.State = StNormal;
+                StateMachine.State = StNormal; // (516) 
 
                 jumpGraceTimer = 0;
                 varJumpTimer = SuperBounceVarJumpTime;
@@ -2568,7 +2568,7 @@ namespace Celeste
                 if (!Inventory.NoRefills)
                     RefillDash();
                 RefillStamina();
-                StateMachine.State = StNormal;
+                StateMachine.State = StNormal; // (517) 
 
                 jumpGraceTimer = 0;
                 varJumpTimer = BounceVarJumpTime;
@@ -2606,7 +2606,7 @@ namespace Celeste
 
             dashAttackTimer = 0;
             forceMoveXTimer = 0;
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (518) 
         }
 
         public void ReflectBounce(Vector2 direction)
@@ -2624,7 +2624,7 @@ namespace Celeste
 
             dashAttackTimer = 0;
             forceMoveXTimer = 0;
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (519) 
         }
 
         /// <summary>
@@ -3111,7 +3111,7 @@ namespace Celeste
             //Dream Dash
             if (DreamDashCheck(Vector2.UnitX * Math.Sign(Speed.X)))
             {
-                StateMachine.State = StDreamDash;
+                StateMachine.State = StDreamDash; // (520) 
                 dashAttackTimer = 0;
                 return;
             }
@@ -3134,7 +3134,7 @@ namespace Celeste
             {
                 Input.Rumble(RumbleStrength.Medium, RumbleLength.Short);
                 level.Displacement.AddBurst(Center, .5f, 8, 48, .4f, Ease.QuadOut, Ease.QuadOut);
-                StateMachine.State = StHitSquash;
+                StateMachine.State = StHitSquash; // (521) 
             }
         }
 
@@ -3224,7 +3224,7 @@ namespace Celeste
                 //Dream Dash
                 if (DreamDashCheck(Vector2.UnitY * Math.Sign(Speed.Y)))
                 {
-                    StateMachine.State = StDreamDash;
+                    StateMachine.State = StDreamDash; // (522) 
                     dashAttackTimer = 0;
                     return;
                 }
@@ -3306,7 +3306,7 @@ namespace Celeste
                 //Dream Dash
                 if (DreamDashCheck(Vector2.UnitY * Math.Sign(Speed.Y)))
                 {
-                    StateMachine.State = StDreamDash;
+                    StateMachine.State = StDreamDash; // (523) 
                     dashAttackTimer = 0;
                     return;
                 }
@@ -3323,7 +3323,7 @@ namespace Celeste
             {
                 Input.Rumble(RumbleStrength.Medium, RumbleLength.Short);
                 level.Displacement.AddBurst(Center, .5f, 8, 48, .4f, Ease.QuadOut, Ease.QuadOut);
-                StateMachine.State = StHitSquash;
+                StateMachine.State = StHitSquash; // (524) 
             }
         }
 
@@ -3397,7 +3397,7 @@ namespace Celeste
             Speed.X = 0;
 
             if (StateMachine.State == StRedDash)
-                StateMachine.State = StNormal;
+                StateMachine.State = StNormal; // (525) 
         }
 
         public void OnBoundsV()
@@ -3405,7 +3405,7 @@ namespace Celeste
             Speed.Y = 0;
 
             if (StateMachine.State == StRedDash)
-                StateMachine.State = StNormal;
+                StateMachine.State = StNormal; // (526) 
         }
 
         override protected void OnSquish(CollisionData data)
@@ -4405,7 +4405,7 @@ namespace Celeste
                 if (swapBlock != null && swapBlock.Direction.X == Math.Sign(DashDir.X))
                 {
                     // 角色状态改为攀爬
-                    StateMachine.State = StClimb;
+                    StateMachine.State = StClimb; // (527) 
                     // 速度重置
                     Speed = Vector2.Zero;
                     // 协同程序结束
@@ -4457,7 +4457,7 @@ namespace Celeste
                 Speed.Y *= EndDashUpMult;
 
             // 角色状态恢复为正常
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (528) 
         }
 
         #endregion
@@ -4596,7 +4596,7 @@ namespace Celeste
 
         public void Boost(Booster booster)
         {
-            StateMachine.State = StBoost;
+            StateMachine.State = StBoost; // (529) 
             Speed = Vector2.Zero;
             boostTarget = booster.Center;
             boostRed = false;
@@ -4605,7 +4605,7 @@ namespace Celeste
 
         public void RedBoost(Booster booster)
         {
-            StateMachine.State = StBoost;
+            StateMachine.State = StBoost; // (530) 
             Speed = Vector2.Zero;
             boostTarget = booster.Center;
             boostRed = true;
@@ -4649,9 +4649,9 @@ namespace Celeste
             yield return BoostTime;
 
             if (boostRed)
-                StateMachine.State = StRedDash;
+                StateMachine.State = StRedDash; // (531) 
             else
-                StateMachine.State = StDash;
+                StateMachine.State = StDash; // (532) 
         }
 
         #endregion
@@ -4843,7 +4843,7 @@ namespace Celeste
                 RefillDash();
             RefillStamina();
             dashCooldownTimer = DashCooldown;
-            StateMachine.State = StLaunch;
+            StateMachine.State = StLaunch; // (533) 
 
             return normal;
         }
@@ -4860,7 +4860,7 @@ namespace Celeste
             RefillDash();
             RefillStamina();
             dashCooldownTimer = .28f;
-            StateMachine.State = StLaunch;
+            StateMachine.State = StLaunch; // (534) 
         }
 
         public void BadelineBoostLaunch(float atX)
@@ -4874,7 +4874,7 @@ namespace Celeste
             RefillDash();
             RefillStamina();
             dashCooldownTimer = DashCooldown;
-            StateMachine.State = StLaunch;
+            StateMachine.State = StLaunch; // (535) 
         }
 
         private void LaunchBegin()
@@ -4916,7 +4916,7 @@ namespace Celeste
         {
             summitLaunchTargetX = targetX;
 
-            StateMachine.State = StSummitLaunch;
+            StateMachine.State = StSummitLaunch; // (536) 
         }
 
         private void SummitLaunchBegin()
@@ -4943,7 +4943,7 @@ namespace Celeste
 
         public void StopSummitLaunch()
         {
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (537) 
             Speed.Y = BounceSpeed;
             AutoJump = true;
             varJumpSpeed = Speed.Y;
@@ -4979,7 +4979,7 @@ namespace Celeste
             Speed = oldSpeed;
             Speed.Y = Math.Min(Speed.Y, 0);
             varJumpTimer = varJump;
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (538) 
         }
 
         #endregion
@@ -5180,7 +5180,7 @@ namespace Celeste
                 Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
             }
             else
-                StateMachine.State = StStarFly;
+                StateMachine.State = StStarFly; // (539) 
 
             return true;
         }
@@ -5447,7 +5447,7 @@ namespace Celeste
 
         public void StartCassetteFly(Vector2 targetPosition, Vector2 control)
         {
-            StateMachine.State = StCassetteFly;
+            StateMachine.State = StCassetteFly; // (540) 
             cassetteFlyCurve = new SimpleCurve(Position, targetPosition, control);
             cassetteFlyLerp = 0;
             Speed = Vector2.Zero;
@@ -5498,7 +5498,7 @@ namespace Celeste
             level.CanRetry = true;
             level.FormationBackdrop.Display = false;
             level.FormationBackdrop.Alpha = 0.5f;
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (541) 
             Depth = Depths.Player;
             yield break;
         }
@@ -5512,7 +5512,7 @@ namespace Celeste
         public void StartAttract(Vector2 attractTo)
         {
             this.attractTo = Calc.Round(attractTo);
-            StateMachine.State = StAttract;
+            StateMachine.State = StAttract; // (542) 
         }
 
         private void AttractBegin()
@@ -5625,7 +5625,7 @@ namespace Celeste
 
         public IEnumerator DummyWalkTo(float x, bool walkBackwards = false, float speedMultiplier = 1f, bool keepWalkingIntoWalls = false)
         {
-            StateMachine.State = StDummy;
+            StateMachine.State = StDummy; // (543) 
 
             if (Math.Abs(X - x) > 4 && !Dead)
             {
@@ -5655,7 +5655,7 @@ namespace Celeste
 
         public IEnumerator DummyWalkToExact(int x, bool walkBackwards = false, float speedMultiplier = 1f)
         {
-            StateMachine.State = StDummy;
+            StateMachine.State = StDummy; // (544) 
 
             if (X != x)
             {
@@ -5697,7 +5697,7 @@ namespace Celeste
 
         public IEnumerator DummyRunTo(float x, bool fastAnim = false)
         {
-            StateMachine.State = StDummy;
+            StateMachine.State = StDummy; // (545) 
             
             if (Math.Abs(X - x) > 4)
             {
@@ -5778,7 +5778,7 @@ namespace Celeste
             for (var p = 0f; p < 1; p += Engine.DeltaTime)
                 yield return null;
 
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (546) 
         }
 
         #endregion
@@ -5860,7 +5860,7 @@ namespace Celeste
 
             yield return 1.2f;
 
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (547) 
         }
 
         private void OnReflectionFallSkip(Level level)
@@ -5913,7 +5913,7 @@ namespace Celeste
             Sprite.Play(PlayerSprite.Idle);
             yield return .2f;
 
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (548) 
         }
 
         #endregion
@@ -6006,7 +6006,7 @@ namespace Celeste
                     Hair.Nodes[i] = new Vector2(0, 2 + i);
             }
 
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (549) 
         }
 
         #endregion
@@ -6021,7 +6021,7 @@ namespace Celeste
             yield return Sprite.PlayRoutine("wakeUp");
             yield return .2f;
 
-            StateMachine.State = StNormal;
+            StateMachine.State = StNormal; // (550) 
         }
 
         #endregion
@@ -6054,7 +6054,7 @@ namespace Celeste
             {
                 if (StateMachine.State == StIntroRespawn)
                 {
-                    StateMachine.State = StNormal;
+                    StateMachine.State = StNormal; // (551) 
                     Sprite.Scale = new Vector2(1.5f, .5f);
                 }
             };
